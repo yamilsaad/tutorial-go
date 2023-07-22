@@ -4,21 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"tutorial-go/models" // Asegúrate de reemplazar "nombre_proyecto" por el nombre real de tu módulo
 )
 
-// Lista de tareas simuladas para este ejemplo
-var tasks []models.Task
+// Task representa una tarea en la lista de tareas
+type Task struct {
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	Completed bool   `json:"completed"`
+}
 
-// getTaskHandler maneja las solicitudes para obtener todas las tareas
+// Lista de tareas simuladas para este ejemplo
+var Tasks []Task
+
+// getTasksHandler maneja las solicitudes para obtener todas las tareas
 func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tasks)
+	json.NewEncoder(w).Encode(Tasks)
 }
 
 // createTaskHandler maneja las solicitudes para crear una nueva tarea
 func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
-	var task models.Task
+	var task Task
 	err := json.NewDecoder(r.Body).Decode(&task)
 	if err != nil {
 		http.Error(w, "Error al decodificar la tarea", http.StatusBadRequest)
@@ -26,14 +32,14 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Simulamos la generación del ID
-	task.ID = len(tasks) + 1
+	task.ID = len(Tasks) + 1
 
-	tasks = append(tasks, task)
+	Tasks = append(Tasks, task)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(task)
 }
 
-// markTaskCompletedHandler maneja las solicitudes para marcar una tarea como completada
+// markTaskCompletedHandler maneja las solicitudes de tareas completadas
 func MarkTaskCompletedHandler(w http.ResponseWriter, r *http.Request) {
 	// Obtenemos el ID de la tarea de la ruta
 	// Ejemplo de ruta: /tasks/3 (para marcar la tarea con ID 3 como completada)
@@ -48,12 +54,12 @@ func MarkTaskCompletedHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Buscamos la tarea con el ID correspondiente en la lista de tareas
 	// Si no encontramos la tarea, responderemos con un error
-	var foundTask models.Task
-	for i, t := range tasks {
+	var foundTask Task
+	for i, t := range Tasks {
 		if t.ID == id {
-			foundTask = tasks[i]
+			foundTask = Tasks[i]
 			foundTask.Completed = true
-			tasks[i] = foundTask
+			Tasks[i] = foundTask
 			break
 		}
 	}
